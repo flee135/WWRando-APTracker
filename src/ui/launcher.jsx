@@ -11,6 +11,7 @@ import TextBoxOptionInput from "./textbox-option-input";
 import OptionsTable from "./options-table";
 import Storage from "./storage";
 import ToggleOptionInput from "./toggle-option-input";
+import Tooltip from "./tooltip";
 
 import "react-toastify/dist/ReactToastify.css";
 import "react-toggle/style.css";
@@ -53,13 +54,16 @@ export default class Launcher extends React.PureComponent {
     this.state = {
       options,
       permalink,
+      yamlFile: null,
     };
 
+    this.clearYamlFile = this.clearYamlFile.bind(this);
     this.connectAndLaunch = this.connectAndLaunch.bind(this);
     this.launchNewTracker = this.launchNewTracker.bind(this);
     this.loadFromFile = this.loadFromFile.bind(this);
     this.loadFromSave = this.loadFromSave.bind(this);
     this.setOptionValue = this.setOptionValue.bind(this);
+    this.uploadYamlFile = this.uploadYamlFile.bind(this);
   }
 
   componentDidMount() {
@@ -412,6 +416,60 @@ export default class Launcher extends React.PureComponent {
     );
   }
 
+  async uploadYamlFile() {
+    try {
+      const yamlFile = await Storage.loadTextFile(".yaml,.yml");
+      this.setState({ yamlFile });
+    } catch (err) {
+      // No file was picked, or the file couldn't be read
+    }
+  }
+
+  clearYamlFile() {
+    this.setState({ yamlFile: null });
+  }
+
+  yamlFileTooltip() {
+    return (
+      <div className="tooltip">
+        Checks in the exclude_locations list from the YAML will be removed
+        from the tracker.
+      </div>
+    );
+  }
+
+  yamlFileInput() {
+    const { yamlFile } = this.state;
+
+    return (
+      <React.Fragment key="yaml-file">
+        <td className="label-text">
+          <span className="label-with-help">
+            Player YAML (optional)
+            <Tooltip tooltipContent={this.yamlFileTooltip()}>
+              <span className="help-icon">?</span>
+            </Tooltip>
+          </span>
+        </td>
+        <td className="option-container">
+          <div className="textbox-container yaml-file-container">
+            <span className="yaml-file-name">
+              {_.isNil(yamlFile) ? "No file chosen" : yamlFile.name}
+            </span>
+            <button type="button" onClick={this.uploadYamlFile}>
+              Choose File
+            </button>
+            {!_.isNil(yamlFile) && (
+              <button type="button" onClick={this.clearYamlFile}>
+                Clear
+              </button>
+            )}
+          </div>
+        </td>
+      </React.Fragment>
+    );
+  }
+
   archipelagoOptionsTable() {
     return (
       <OptionsTable
@@ -434,6 +492,7 @@ export default class Launcher extends React.PureComponent {
             inputType: "password",
             placeholder: "Password",
           }),
+          this.yamlFileInput(),
         ]}
       />
     );

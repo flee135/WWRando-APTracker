@@ -8,6 +8,13 @@ export default class Storage {
     localStorage.setItem(this.#SAVE_FILE_KEY, fileData);
   }
 
+  static async loadTextFile(accept) {
+    const file = await this.#loadFileFromDialog(accept);
+    const contents = await this.#readFile(file);
+
+    return { contents, name: file.name };
+  }
+
   static loadFromStorage() {
     return localStorage.getItem(this.#SAVE_FILE_KEY);
   }
@@ -55,11 +62,14 @@ export default class Storage {
 
   static #PREFERENCES_KEY = 'preferences';
 
-  static async #loadFileFromDialog() {
+  static async #loadFileFromDialog(accept) {
     return new Promise((resolve, reject) => {
       const input = document.createElement('input');
 
       input.setAttribute('type', 'file');
+      if (!_.isNil(accept)) {
+        input.setAttribute('accept', accept);
+      }
 
       input.onchange = () => {
         const file = _.first(input.files);
