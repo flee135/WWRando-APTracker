@@ -514,9 +514,10 @@ export default class Launcher extends React.PureComponent {
     }
 
     const { yamlFile } = this.state;
+    let excludedLocations = null;
     if (!_.isNil(yamlFile)) {
       try {
-        ApYaml.getExcludedLocations(yamlFile.contents, playerName);
+        excludedLocations = ApYaml.getExcludedLocations(yamlFile.contents, playerName);
       } catch (err) {
         toast.error(`Could not read the player YAML: ${err.message}`);
         return;
@@ -533,6 +534,13 @@ export default class Launcher extends React.PureComponent {
       );
 
       this.updateOptions(options);
+
+      if (_.isNil(excludedLocations)) {
+        Storage.clearExcludedLocations();
+      } else {
+        const seedName = _.get(options, Permalink.OPTIONS.SEED_NAME);
+        Storage.saveExcludedLocations(seedName, playerName, excludedLocations);
+      }
 
       toast.success("Connected! Launching tracker...");
 

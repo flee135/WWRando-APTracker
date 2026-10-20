@@ -33,6 +33,30 @@ export default class Storage {
     localStorage.setItem(this.#PREFERENCES_KEY, preferencesString);
   }
 
+  static loadExcludedLocations(seedName, playerName) {
+    const excludedString = localStorage.getItem(this.#EXCLUDED_LOCATIONS_KEY);
+    const excluded = JSON.parse(excludedString);
+
+    if (
+      _.isNil(excluded)
+      || excluded.seedName !== seedName
+      || excluded.playerName !== playerName
+    ) {
+      return [];
+    }
+
+    return excluded.locations;
+  }
+
+  static saveExcludedLocations(seedName, playerName, locations) {
+    const excludedString = JSON.stringify({ seedName, playerName, locations });
+    localStorage.setItem(this.#EXCLUDED_LOCATIONS_KEY, excludedString);
+  }
+
+  static clearExcludedLocations() {
+    localStorage.removeItem(this.#EXCLUDED_LOCATIONS_KEY);
+  }
+
   static async exportFile(saveData) {
     const blob = new Blob([saveData], { type: 'application/json' });
     const url = await URL.createObjectURL(blob);
@@ -61,6 +85,8 @@ export default class Storage {
   static #EXPORT_FILE_NAME = 'tww_rando_tracker_progress.json';
 
   static #PREFERENCES_KEY = 'preferences';
+
+  static #EXCLUDED_LOCATIONS_KEY = 'excludedLocations';
 
   static async #loadFileFromDialog(accept) {
     return new Promise((resolve, reject) => {
