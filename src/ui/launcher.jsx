@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 
 import HEADER_IMAGE from "../images/header.png";
 import APConnector from "../services/ap-connector";
+import ApYaml from "../services/ap-yaml";
 import Permalink from "../services/permalink";
 
 import DropdownOptionInput from "./dropdown-option-input";
@@ -510,6 +511,16 @@ export default class Launcher extends React.PureComponent {
         "Please enter both an Archipelago Server Link and Player Name.",
       );
       return;
+    }
+
+    const { yamlFile } = this.state;
+    if (!_.isNil(yamlFile)) {
+      try {
+        ApYaml.getExcludedLocations(yamlFile.contents, playerName);
+      } catch (err) {
+        toast.error(`Could not read the player YAML: ${err.message}`);
+        return;
+      }
     }
 
     try {
